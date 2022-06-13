@@ -1,0 +1,68 @@
+TALLER 3
+
+
+Programación Assembly x86 - Convención C
+
+En este taller vamos a trabajar con código C y ASM para ejercitar el uso y adhesión a contratos estructurales y comportamentales. El checkpoint 1 se trata de un repaso de los conceptos vistos en clase, necesarios para encarar la programación en forma efectiva. El resto de los checkpoints se resuelven programando determinadas rutinas en assembly.
+Al corregir cada checkpoint todos los miembros del grupo deben estar presentes, salvo aquellas instancias en que puedan justificar su ausencia previamente. Si al finalizar la práctica de la materia algún miembro cuenta con más de un 20 % de ausencia no justificada en la totalidad de los checkpoints se considerará la cursada como desaprobada.
+
+1. Conceptos generales
+En este checkpoint deberán responder algunas preguntas conceptuales relacionadas a lo que vimos en las clases teóricas y en la presentación de hoy. Las preguntas tienen que ver con alineación de datos, convención de llamada
+y bibliotecas compartidas.
+a) ¿Qué entienden por convención de llamada? ¿Cómo está  definida la convención C para 64 y 32 bits?
+
+La convención de llamada es la forma en que:
+- Se reciben parámetros
+- Las funciones retornan el resultado
+- Registros se deben preservar en una función
+
+Establece para 64 bits
+-Preservar los registros: RBX, R12,R13,R14,R15,RBP
+-Retornar el resultado a través de RAX para enteros y punteros, y XMM0 si son de punto flotante
+-Los parámetros se pasan por registro de izquierda a derecha según la firma de la función
+	Enteros y punteros: RDI, RSI, RDX, RCX, R8 y R9
+	Punto flotante de XMM0 a XMM7
+	El resto de los parámetros que superen la cantidad de registros se ubican en la pila como en 32 bits
+-Preservar la consistencia de la pila, alineada a 8 bytes, todo PUSH/ADD debe tener su POP/SUB
+
+Establece para 32 bits
+- Preservar los registros EBX,EBP,ESI,EDI
+- Retornar el resultado a través de EAX
+- Los parámetros se pasan por la pila de derecha a izquierda
+- Preservar la consistencia de la pila, alineada a 4 bytes, todo PUSH/ADD debe tener su POP/SUB
+
+
+b) ¿Quién toma la responsabilidad de asegurar que se cumple la convención de llamada en C? ¿Quién toma la responsabilidad de asegurar que se cumple la convención de llamada en ASM?
+
+-La responsabilidad de mantener la convención de llamada en C es el compilador
+-La responsabilidad de mantener la convención de llamada en ASM es la del programador
+
+
+c) ¿Qué es un stack frame? ¿A qué se le suele decir prólogo y epílogo?
+
+-Es una región de la pila comprendida entre los parámetros recibidos y el tope de la pila
+actual.
+	
+-Prólogo: Es donde se reserva espacio en la pila para datos temporales, se agrega 
+padding para mantenerla alineada a 16 bytes y se preserva los valores de los
+registros no volátiles
+	
+-Epílogo: Es donde restauramos los valores de los registros no volátiles y devolvemos
+la pila a su estado inicial.
+
+
+d) ¿Cuál es el mecanismo utilizado para almacenar variables temporales?
+
+Después de hacer el prólogo se pushea el RBP anterior, luego en RBP almacenamos 
+el valor de RSP, a partir de ahí vemos si está alineada la pila a 16 bytes, si no lo está hacemos un padding. A partir de ahí podemos agregar las variables temporales tomando como referencia a RBP.
+
+
+e) ¿A cuántos bytes es necesario alinear la pila si utilizamos funciones de libc? ¿Si la pila está alineada a 16 bytes al realizarse una llamada función, cuál va a ser su alineamiento al ejecutar la primera instrucción de la función llamada?
+
+Debe estar alineada a 16 bytes. Al ejecutar la primera instrucción va a estar alineada a 8 bytes, que es cuando se pushea el RBP
+
+
+f) Vimos que la convención de llamada nos permite interactuar con bibliotecas binarias que respeten el contrato. ¿Qué sucede si una función que se ubica en un código objeto utilizado por nuestro programa (biblioteca compartida) cambia su interfaz (parámetros o tipo devuelto) en una actualización del sistema operativo?
+
+Es posible que se deje de cumplir el contrato y, por lo tanto, nuestro programa deje de funcionar correctamente.
+
