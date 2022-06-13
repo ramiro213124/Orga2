@@ -1,0 +1,20 @@
+**** COMPILAR C ****
+gcc -g main.c -o main
+./main
+
+
+**** COMPILAR C Y ASM ****
+
+nasm -f elf64 -g -F DWARF *.asm && gcc -c -no-pie -m64 *.c
+gcc -g *.o -o main 
+gcc -g *.o -o main -no-pie
+./main
+
+**** COMPILAR NASM ****
+
+nasm -f elf64 -g -F DWARF holamundo.asm
+ld -o holamundo holamundo.o
+./holamundo
+
+-------------------------------------------------------
+
